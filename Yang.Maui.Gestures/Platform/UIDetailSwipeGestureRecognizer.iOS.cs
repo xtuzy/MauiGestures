@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UIKit;
 
-namespace Yang.Maui.Gestures.Platform
+namespace Yang.Maui.Gestures
 {
     internal class UIDetailSwipeGestureRecognizer : UISwipeGestureRecognizer
     {
@@ -31,7 +31,7 @@ namespace Yang.Maui.Gestures.Platform
         {
             base.TouchesBegan(touches, evt);
             var touch = touches.AnyObject as UITouch;
-            BeganTime  = new NSDate().SecondsSince1970;
+            BeganTime  = new NSDate().SecondsSince1970;//https://stackoverflow.com/questions/358207/iphone-how-to-get-current-milliseconds
             BeganPoint = touch.LocationInView(View);
         }
 

@@ -1,7 +1,7 @@
-using System.ComponentModel;
-using System.Windows.Input;
 using Microsoft.Maui.Controls.Platform;
 using Microsoft.Maui.Platform;
+using System.ComponentModel;
+using System.Windows.Input;
 using UIKit;
 
 namespace Yang.Maui.Gestures;
@@ -17,11 +17,15 @@ internal partial class PlatformGestureEffect : PlatformEffect
     private (Point Origin0, Point Origin1) pinchOrigin, lastPinch;
 
     /// <summary>
+    /// more detail info parameter
+    /// </summary>
+    private ICommand swipeDetailCommand;
+    /// <summary>
     /// Take a Point parameter
     /// Except panPointCommand which takes a (Point,GestureStatus) parameter (its a tuple) 
     /// </summary>
     private ICommand tapPointCommand, panPointCommand, doubleTapPointCommand, longPressPointCommand;
-        
+
     /// <summary>
     /// No parameter
     /// </summary>
@@ -31,7 +35,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
     /// 1 parameter: PinchEventArgs
     /// </summary>
     private ICommand pinchCommand;
-        
+
     private object commandParameter;
 
     public PlatformGestureEffect()
@@ -41,17 +45,17 @@ internal partial class PlatformGestureEffect : PlatformEffect
         //else
         //    tapDetector.ShouldReceiveTouch = (s, args) => true;
 
-        tapDetector = CreateTapRecognizer(() => (tapCommand,tapPointCommand));
+        tapDetector = CreateTapRecognizer(() => (tapCommand, tapPointCommand));
         doubleTapDetector = CreateTapRecognizer(() => (doubleTapCommand, doubleTapPointCommand));
         doubleTapDetector.NumberOfTapsRequired = 2;
         longPressDetector = CreateLongPressRecognizer(() => (longPressCommand, longPressPointCommand));
         panDetector = CreatePanRecognizer(() => (panCommand, panPointCommand));
         pinchDetector = CreatePinchRecognizer(() => pinchCommand);
 
-        swipeLeftDetector = CreateSwipeRecognizer(() => swipeLeftCommand, UISwipeGestureRecognizerDirection.Left);
-        swipeRightDetector = CreateSwipeRecognizer(() => swipeRightCommand, UISwipeGestureRecognizerDirection.Right);
-        swipeUpDetector = CreateSwipeRecognizer(() => swipeTopCommand, UISwipeGestureRecognizerDirection.Up);
-        swipeDownDetector = CreateSwipeRecognizer(() => swipeBottomCommand, UISwipeGestureRecognizerDirection.Down);
+        swipeLeftDetector = CreateSwipeRecognizer(() => (swipeLeftCommand, swipeDetailCommand), UISwipeGestureRecognizerDirection.Left);
+        swipeRightDetector = CreateSwipeRecognizer(() => (swipeRightCommand, swipeDetailCommand), UISwipeGestureRecognizerDirection.Right);
+        swipeUpDetector = CreateSwipeRecognizer(() => (swipeTopCommand, swipeDetailCommand), UISwipeGestureRecognizerDirection.Up);
+        swipeDownDetector = CreateSwipeRecognizer(() => (swipeBottomCommand, swipeDetailCommand), UISwipeGestureRecognizerDirection.Down);
 
         recognizers = new()
         {
@@ -60,9 +64,9 @@ internal partial class PlatformGestureEffect : PlatformEffect
         };
     }
 
-    private UITapGestureRecognizer CreateTapRecognizer(Func<(ICommand? Command,ICommand? PointCommand)> getCommand)
+    private UITapGestureRecognizer CreateTapRecognizer(Func<(ICommand? Command, ICommand? PointCommand)> getCommand)
     {
-        return new (recognizer =>
+        return new(recognizer =>
         {
             var (command, pointCommand) = getCommand();
             if (command != null || pointCommand != null)
@@ -71,7 +75,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
                 var point = recognizer.LocationInView(control);
                 if (command?.CanExecute(commandParameter) == true)
                     command.Execute(commandParameter);
-                if(pointCommand?.CanExecute(point) == true)
+                if (pointCommand?.CanExecute(point) == true)
                     pointCommand.Execute(point);
             }
         })
@@ -84,7 +88,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
 
     private UILongPressGestureRecognizer CreateLongPressRecognizer(Func<(ICommand? Command, ICommand? PointCommand)> getCommand)
     {
-        return new (recognizer =>
+        return new(recognizer =>
         {
             if (recognizer.State == UIGestureRecognizerState.Began)
             {
@@ -107,13 +111,20 @@ internal partial class PlatformGestureEffect : PlatformEffect
         };
     }
 
-    private UISwipeGestureRecognizer CreateSwipeRecognizer(Func<ICommand> getCommand, UISwipeGestureRecognizerDirection direction)
+    private UIDetailSwipeGestureRecognizer CreateSwipeRecognizer(Func<(ICommand? Command, ICommand? SwipeDetailCommand)> getCommand, UISwipeGestureRecognizerDirection direction)
     {
-        return new (args =>
+        return new(recognizer =>
         {
-            var handler = getCommand();
-            if (handler?.CanExecute(commandParameter) == true)
-                handler.Execute(commandParameter);
+            var gesture = recognizer as UIDetailSwipeGestureRecognizer;
+            var dt = (int)((gesture.EndTime - gesture.BeganTime) * 1000);
+            var velocityX = (gesture.EndPoint.X - gesture.BeganPoint.X) / dt;
+            var velocityY = (gesture.EndPoint.Y - gesture.BeganPoint.Y) / dt;
+            var (command, swipeDetailCommand) = getCommand();
+            if (command?.CanExecute(commandParameter) == true)
+                command.Execute(commandParameter);
+            var eventArg = new SwipeEventArgs(gesture.BeganPoint.ToPoint(), gesture.EndPoint.ToPoint(), velocityX, velocityY, (SwipeDirection)((int)direction));
+            if (command?.CanExecute(eventArg) == true)
+                command.Execute(eventArg);
         })
         {
             Enabled = false,
@@ -121,10 +132,10 @@ internal partial class PlatformGestureEffect : PlatformEffect
             Direction = direction
         };
     }
-        
+
     private UIImmediatePinchGestureRecognizer CreatePinchRecognizer(Func<ICommand> getCommand)
     {
-        return new (recognizer =>
+        return new(recognizer =>
         {
             var command = getCommand();
             if (command != null)
@@ -133,11 +144,11 @@ internal partial class PlatformGestureEffect : PlatformEffect
 
                 if (recognizer.NumberOfTouches < 2)
                 {
-                    if(recognizer.State == UIGestureRecognizerState.Changed)
+                    if (recognizer.State == UIGestureRecognizerState.Changed)
                         return;
                 }
-                    
-                if(recognizer.State == UIGestureRecognizerState.Began)
+
+                if (recognizer.State == UIGestureRecognizerState.Began)
                     lastPinch = (Point.Zero, Point.Zero);
 
                 var current0 = lastPinch.Origin0;
@@ -150,11 +161,11 @@ internal partial class PlatformGestureEffect : PlatformEffect
                     current1 = lastCurrent1 = recognizer.LocationOfTouch(1, control).ToPoint();
                 else if (recognizer.State == UIGestureRecognizerState.Began)
                     current1 = lastCurrent1 = current0;
-                    
+
                 lastPinch = (lastCurrent0, lastCurrent1);
                 if (recognizer.State == UIGestureRecognizerState.Began)
                     pinchOrigin = (current0, current1);
-                    
+
                 var status = recognizer.State switch
                 {
                     UIGestureRecognizerState.Began => GestureStatus.Started,
@@ -184,10 +195,10 @@ internal partial class PlatformGestureEffect : PlatformEffect
             {
                 if (recognizer.NumberOfTouches > 1 && recognizer.State != UIGestureRecognizerState.Cancelled && recognizer.State != UIGestureRecognizerState.Ended)
                     return;
-                    
+
                 var control = Control ?? Container;
                 var point = recognizer.LocationInView(control).ToPoint();
-                    
+
                 if (command?.CanExecute(commandParameter) == true)
                     command.Execute(commandParameter);
 
@@ -203,7 +214,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
                         UIGestureRecognizerState.Cancelled => GestureStatus.Canceled,
                         _ => GestureStatus.Canceled,
                     };
-                        
+
                     var parameter = new PanEventArgs(gestureStatus, point);
                     if (pointCommand.CanExecute(parameter))
                         pointCommand.Execute(parameter);
@@ -223,8 +234,8 @@ internal partial class PlatformGestureEffect : PlatformEffect
                         command.Execute(commandParameter);
                     return true;
                 }
-                            
-                if(pointCommand != null)
+
+                if (pointCommand != null)
                 {
                     var control = Control ?? Container;
                     var point = recognizer.LocationInView(control).ToPoint();
@@ -255,6 +266,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
         swipeRightCommand = Gesture.GetSwipeRightCommand(Element);
         swipeTopCommand = Gesture.GetSwipeTopCommand(Element);
         swipeBottomCommand = Gesture.GetSwipeBottomCommand(Element);
+        swipeDetailCommand = Gesture.GetSwipeDetailCommand(Element);
 
         tapPointCommand = Gesture.GetTapPointCommand(Element);
         panPointCommand = Gesture.GetPanPointCommand(Element);

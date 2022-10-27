@@ -23,6 +23,7 @@ public static class Gesture
     public static readonly BindableProperty SwipeRightCommandProperty = BindableProperty.CreateAttached("SwipeRightCommand", typeof(ICommand), typeof(Gesture), null, propertyChanged: CommandChanged);
     public static readonly BindableProperty SwipeTopCommandProperty = BindableProperty.CreateAttached("SwipeTopCommand", typeof(ICommand), typeof(Gesture), null, propertyChanged: CommandChanged);
     public static readonly BindableProperty SwipeBottomCommandProperty = BindableProperty.CreateAttached("SwipeBottomCommand", typeof(ICommand), typeof(Gesture), null, propertyChanged: CommandChanged);
+    public static readonly BindableProperty SwipeDetailCommandProperty = BindableProperty.CreateAttached("SwipeDetailCommand", typeof(ICommand), typeof(Gesture), null, propertyChanged: CommandChanged);
 
     /// <summary>
     /// Take a Point parameter 
@@ -59,6 +60,7 @@ public static class Gesture
     public static ICommand GetSwipeRightCommand(BindableObject view) => (ICommand)view.GetValue(SwipeRightCommandProperty);
     public static ICommand GetSwipeTopCommand(BindableObject view) => (ICommand)view.GetValue(SwipeTopCommandProperty);
     public static ICommand GetSwipeBottomCommand(BindableObject view) => (ICommand)view.GetValue(SwipeBottomCommandProperty);
+    public static ICommand GetSwipeDetailCommand(BindableObject view) => (ICommand)view.GetValue(SwipeDetailCommandProperty);
 
     /// <summary>
     /// Take a Point parameter 
@@ -88,6 +90,7 @@ public static class Gesture
     public static void SetSwipeRightCommand(BindableObject view, ICommand value) => view.SetValue(SwipeRightCommandProperty, value);
     public static void SetSwipeTopCommand(BindableObject view, ICommand value) => view.SetValue(SwipeTopCommandProperty, value);
     public static void SetSwipeBottomCommand(BindableObject view, ICommand value) => view.SetValue(SwipeBottomCommandProperty, value);
+    public static void SetSwipeDetailCommand(BindableObject view, ICommand value) => view.SetValue(SwipeDetailCommandProperty, value);
     /// <summary>
     /// Take a Point parameter 
     /// </summary>

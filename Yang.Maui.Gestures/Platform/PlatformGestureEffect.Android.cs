@@ -1,8 +1,8 @@
-using System.ComponentModel;
-using System.Windows.Input;
 using Android.Util;
 using Android.Views;
 using Microsoft.Maui.Controls.Platform;
+using System.ComponentModel;
+using System.Windows.Input;
 using View = Android.Views.View;
 
 namespace Yang.Maui.Gestures;
@@ -15,11 +15,15 @@ internal partial class PlatformGestureEffect : PlatformEffect
     private object commandParameter;
 
     /// <summary>
+    /// more detail info parameter
+    /// </summary>
+    private ICommand swipeDetailCommand;
+    /// <summary>
     /// Take a Point parameter
     /// Except panPointCommand which takes a PanEventArgs parameter 
     /// </summary>
     private ICommand? tapPointCommand, panPointCommand, doubleTapPointCommand, longPressPointCommand;
-        
+
     /// <summary>
     /// No parameter
     /// </summary>
@@ -29,7 +33,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
     /// 1 parameter: PinchEventArgs
     /// </summary>
     private ICommand pinchCommand;
-        
+
     public PlatformGestureEffect()
     {
         tapDetector = new()
@@ -42,19 +46,21 @@ internal partial class PlatformGestureEffect : PlatformEffect
                     var x = motionEvent.GetX();
                     var y = motionEvent.GetY();
 
-                    var point = PxToDp(new Point(x,y));
+                    var point = PxToDp(new Point(x, y));
                     if (tapPointCommand.CanExecute(point))
                         tapPointCommand.Execute(point);
                 }
 
-                if(tapCommand != null) {
+                if (tapCommand != null)
+                {
                     if (tapCommand.CanExecute(commandParameter))
                         tapCommand.Execute(commandParameter);
                 }
             },
             DoubleTapAction = motionEvent =>
             {
-                if (doubleTapPointCommand != null) {
+                if (doubleTapPointCommand != null)
+                {
                     var x = motionEvent.GetX();
                     var y = motionEvent.GetY();
 
@@ -63,43 +69,56 @@ internal partial class PlatformGestureEffect : PlatformEffect
                         doubleTapPointCommand.Execute(point);
                 }
 
-                if (doubleTapCommand != null) {
+                if (doubleTapCommand != null)
+                {
                     if (doubleTapCommand.CanExecute(commandParameter))
                         doubleTapCommand.Execute(commandParameter);
                 }
             },
             SwipeLeftAction = _ =>
             {
-                if (swipeLeftCommand != null) {
+                if (swipeLeftCommand != null)
+                {
                     if (swipeLeftCommand.CanExecute(commandParameter))
                         swipeLeftCommand.Execute(commandParameter);
                 }
             },
             SwipeRightAction = _ =>
             {
-                if (swipeRightCommand != null) {
+                if (swipeRightCommand != null)
+                {
                     if (swipeRightCommand.CanExecute(commandParameter))
                         swipeRightCommand.Execute(commandParameter);
                 }
             },
             SwipeTopAction = _ =>
             {
-                if (swipeTopCommand != null) {
+                if (swipeTopCommand != null)
+                {
                     if (swipeTopCommand.CanExecute(commandParameter))
                         swipeTopCommand.Execute(commandParameter);
                 }
             },
             SwipeBottomAction = _ =>
             {
-                if (swipeBottomCommand != null) {
+                if (swipeBottomCommand != null)
+                {
                     if (swipeBottomCommand.CanExecute(commandParameter))
                         swipeBottomCommand.Execute(commandParameter);
+                }
+            },
+            SwipeDetailAction = (arg) =>
+            {
+                if (swipeDetailCommand != null)
+                {
+                    if (swipeDetailCommand.CanExecute(commandParameter))
+                        swipeDetailCommand.Execute(commandParameter);
                 }
             },
             PanAction = (initialDown, currentMove) =>
             {
                 var continueGesture = true;
-                    
+
                 if (panPointCommand != null)
                 {
                     var x = currentMove.GetX();
@@ -115,14 +134,15 @@ internal partial class PlatformGestureEffect : PlatformEffect
                         _ => GestureStatus.Canceled
                     };
 
-                    var parameter = new PanEventArgs(status,point);
+                    var parameter = new PanEventArgs(status, point);
                     if (panPointCommand.CanExecute(parameter))
                         panPointCommand.Execute(parameter);
                     if (parameter.CancelGesture)
                         continueGesture = false;
                 }
 
-                if (panCommand != null) {
+                if (panCommand != null)
+                {
                     if (panCommand.CanExecute(commandParameter))
                         panCommand.Execute(commandParameter);
                 }
@@ -137,7 +157,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
                     var origin1 = PxToDp(new Point(initialDown.GetX(1), initialDown.GetY(1)));
                     var current0 = PxToDp(new Point(currentMove.GetX(0), currentMove.GetY(0)));
                     var current1 = PxToDp(new Point(currentMove.GetX(1), currentMove.GetY(1)));
-                        
+
                     var status = currentMove.Action switch
                     {
                         MotionEventActions.Down => GestureStatus.Started,
@@ -164,7 +184,8 @@ internal partial class PlatformGestureEffect : PlatformEffect
                         longPressPointCommand.Execute(point);
                 }
 
-                if (longPressCommand != null) {
+                if (longPressCommand != null)
+                {
                     if (longPressCommand.CanExecute(commandParameter))
                         longPressCommand.Execute(commandParameter);
                 }
@@ -193,6 +214,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
         swipeRightCommand = Gesture.GetSwipeRightCommand(Element);
         swipeTopCommand = Gesture.GetSwipeTopCommand(Element);
         swipeBottomCommand = Gesture.GetSwipeBottomCommand(Element);
+        swipeDetailCommand = Gesture.GetSwipeDetailCommand(Element);
 
         tapPointCommand = Gesture.GetTapPointCommand(Element);
         panPointCommand = Gesture.GetPanPointCommand(Element);
@@ -241,11 +263,11 @@ internal partial class PlatformGestureEffect : PlatformEffect
         private readonly IExtendedGestureListener? myGestureListener;
 
         private ExtendedGestureDetector(IntPtr javaRef, Android.Runtime.JniHandleOwnership transfer) : base(javaRef, transfer)
-        { 
+        {
         }
 
         public ExtendedGestureDetector(Android.Content.Context context, IOnGestureListener listener) : base(context, listener)
-        { 
+        {
             if (listener is IExtendedGestureListener my)
                 myGestureListener = my;
         }
@@ -277,6 +299,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
         public Action<MotionEvent>? SwipeRightAction { get; set; }
         public Action<MotionEvent>? SwipeTopAction { get; set; }
         public Action<MotionEvent>? SwipeBottomAction { get; set; }
+        public Action<SwipeEventArgs>? SwipeDetailAction { get; set; }
         public Func<MotionEvent, MotionEvent?, bool>? PanAction { get; set; }
         public Action<MotionEvent, MotionEvent?>? PinchAction { get; set; }
         public Action<MotionEvent?>? LongPressAction { get; set; }
@@ -302,7 +325,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
 
         public override bool OnDown(MotionEvent? e)
         {
-            if (e!=null && IsPanImmediate && e.PointerCount == 1 && PanAction != null)
+            if (e != null && IsPanImmediate && e.PointerCount == 1 && PanAction != null)
                 return PanAction.Invoke(e, e);
 
             if (e != null && IsPinchImmediate && e.PointerCount == 2 && PinchAction != null)
@@ -316,9 +339,9 @@ internal partial class PlatformGestureEffect : PlatformEffect
 
         public void OnUp(MotionEvent? e)
         {
-            if(e != null)
+            if (e != null)
                 PanAction?.Invoke(e, e);
-                
+
             pinchInitialDown = null;
         }
 
@@ -329,8 +352,8 @@ internal partial class PlatformGestureEffect : PlatformEffect
                 //Switch to pinch
                 if (pinchInitialDown == null && initialDown.PointerCount == 1 && currentMove.PointerCount == 2)
                     pinchInitialDown = MotionEvent.Obtain(currentMove);
-                    
-                if(currentMove.PointerCount == 1 && PanAction != null)
+
+                if (currentMove.PointerCount == 1 && PanAction != null)
                     return PanAction.Invoke(initialDown, currentMove);
 
                 if (currentMove.PointerCount == 2 && PinchAction != null && pinchInitialDown != null)
@@ -349,20 +372,22 @@ internal partial class PlatformGestureEffect : PlatformEffect
 
             var dx = e2.RawX - e1.RawX;
             var dy = e2.RawY - e1.RawY;
+            SwipeDirection direction = SwipeDirection.Up;
             if (Math.Abs(dx) > SwipeThresholdInPoints * Density)
             {
-                if(dx>0)
-                    SwipeRightAction?.Invoke(e2);
+                if (dx > 0)
+                { SwipeRightAction?.Invoke(e2); direction = SwipeDirection.Right; }
                 else
-                    SwipeLeftAction?.Invoke(e2);
+                { SwipeLeftAction?.Invoke(e2); direction = SwipeDirection.Left; }
             }
             else if (Math.Abs(dy) > SwipeThresholdInPoints * Density)
             {
                 if (dy > 0)
-                    SwipeBottomAction?.Invoke(e2);
+                { SwipeBottomAction?.Invoke(e2); direction = SwipeDirection.Down; }
                 else
-                    SwipeTopAction?.Invoke(e2);
+                { SwipeTopAction?.Invoke(e2); direction = SwipeDirection.Up; }
             }
+            SwipeDetailAction?.Invoke(new SwipeEventArgs(new Point(e1.RawX, e1.RawY), new Point(e2.RawX, e2.RawY), velocityX, velocityY, direction));
             return true;
         }
     }
