@@ -1,4 +1,4 @@
-﻿using MauiGestures;
+﻿using Yang.Maui.Gestures;
 
 namespace DemoApp
 {

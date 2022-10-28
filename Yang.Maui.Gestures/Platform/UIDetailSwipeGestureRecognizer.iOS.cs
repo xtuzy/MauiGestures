@@ -31,13 +31,13 @@ namespace Yang.Maui.Gestures
         {
             base.TouchesBegan(touches, evt);
             var touch = touches.AnyObject as UITouch;
-            BeganTime  = new NSDate().SecondsSince1970;//https://stackoverflow.com/questions/358207/iphone-how-to-get-current-milliseconds
-            BeganPoint = touch.LocationInView(View);
+            EndTime = BeganTime = new NSDate().SecondsSince1970;//https://stackoverflow.com/questions/358207/iphone-how-to-get-current-milliseconds
+            EndPoint = BeganPoint = touch.LocationInView(View);
         }
 
-        public override void TouchesEnded(NSSet touches, UIEvent evt)
+        public override void TouchesMoved(NSSet touches, UIEvent evt)
         {
-            base.TouchesEnded(touches, evt);
+            base.TouchesMoved(touches, evt);
             var touch = touches.AnyObject as UITouch;
             EndTime = new NSDate().SecondsSince1970;
             EndPoint = touch.LocationInView(View);

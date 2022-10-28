@@ -1,22 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:local="clr-namespace:DemoApp"
-             x:Class="DemoApp.MainPage"
-    xmlns:ui="clr-namespace:MauiGestures;assembly=MauiGestures"
-    
+<ContentPage
+    x:Class="DemoApp.MainPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:DemoApp"
+    xmlns:ui="clr-namespace:Yang.Maui.Gestures;assembly=Yang.Maui.Gestures"
+    Title="Main Page"
     x:DataType="local:MainPageViewModel"
-    BackgroundColor="AntiqueWhite"
-    Title="Main Page">
+    BackgroundColor="AntiqueWhite">
     <ContentPage.Resources>
         <ResourceDictionary>
             <Style TargetType="Label">
-                <Setter Property="TextColor" Value="Black"/>
+                <Setter Property="TextColor" Value="Black" />
             </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
 
-    <StackLayout Spacing="20" Padding="20">
+    <StackLayout Padding="20" Spacing="20">
 
         <!--  ios: gestures does not work directly on a forms label  -->
         <StackLayout ui:Gesture.TapCommand="{Binding OpenVapoliaCommand}" IsEnabled="True">
@@ -32,7 +32,36 @@
         </StackLayout>
 
         <StackLayout ui:Gesture.SwipeLeftCommand="{Binding OpenVapoliaCommand}" IsEnabled="True">
-            <Label Text="4.Swipe left on this text to open an url" BackgroundColor="Red" />
+            <Label BackgroundColor="Red" Text="4.Swipe left on this text to open an url" />
+        </StackLayout>
+
+        <StackLayout>
+            <Label Text="4.Swipe in this space" />
+            <BoxView
+                ui:Gesture.SwipeDetailCommand="{Binding SwipeDetailCommand}"
+                BackgroundColor="Yellow"
+                HeightRequest="100"
+                InputTransparent="False"
+                IsEnabled="True"
+                WidthRequest="300" />
+            <StackLayout>
+                <Label>
+                    <Label.FormattedText>
+                        <FormattedString>
+                            <Span Text="X: " />
+                            <Span Text="{Binding SwipeDetail.BegainPoint.X, StringFormat='{0:0.##}'}" />
+                            <Span Text=" / Y: " />
+                            <Span Text="{Binding SwipeDetail.BegainPoint.Y, StringFormat='{0:0.##}'}" />
+                            <Span Text=" / vx: " />
+                            <Span Text="{Binding SwipeDetail.VelocityX}" />
+                            <Span Text=" / vy: " />
+                            <Span Text="{Binding SwipeDetail.VelocityY}" />
+                            <Span Text=" / Direction: " />
+                            <Span Text="{Binding SwipeDetail.Direction}" />
+                        </FormattedString>
+                    </Label.FormattedText>
+                </Label>
+            </StackLayout>
         </StackLayout>
 
         <StackLayout>
@@ -50,9 +79,9 @@
                     <Label.FormattedText>
                         <FormattedString>
                             <Span Text="dX: " />
-                            <Span Text="{Binding Pan.X,StringFormat='{0:0.##}'}" />
+                            <Span Text="{Binding Pan.X, StringFormat='{0:0.##}'}" />
                             <Span Text=" / dY: " />
-                            <Span Text="{Binding Pan.Y,StringFormat='{0:0.##}'}" />
+                            <Span Text="{Binding Pan.Y, StringFormat='{0:0.##}'}" />
                             <Span Text=" / Event: " />
                             <Span Text="{Binding PanStatus}" />
                         </FormattedString>
@@ -104,5 +133,5 @@
         </StackLayout>
 
     </StackLayout>
- 
+
 </ContentPage>

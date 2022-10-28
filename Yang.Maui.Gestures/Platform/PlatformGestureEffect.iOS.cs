@@ -60,7 +60,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
         recognizers = new()
         {
             tapDetector, doubleTapDetector, longPressDetector, panDetector, pinchDetector,
-            swipeLeftDetector, swipeRightDetector, swipeUpDetector, swipeDownDetector
+            swipeLeftDetector, swipeRightDetector, swipeUpDetector, swipeDownDetector,
         };
     }
 
@@ -115,6 +115,7 @@ internal partial class PlatformGestureEffect : PlatformEffect
     {
         return new(recognizer =>
         {
+            System.Diagnostics.Debug.WriteLine("Swipe");
             var gesture = recognizer as UIDetailSwipeGestureRecognizer;
             var dt = (int)((gesture.EndTime - gesture.BeganTime) * 1000);
             var velocityX = (gesture.EndPoint.X - gesture.BeganPoint.X) / dt;
@@ -123,8 +124,8 @@ internal partial class PlatformGestureEffect : PlatformEffect
             if (command?.CanExecute(commandParameter) == true)
                 command.Execute(commandParameter);
             var eventArg = new SwipeEventArgs(gesture.BeganPoint.ToPoint(), gesture.EndPoint.ToPoint(), velocityX, velocityY, (SwipeDirection)((int)direction));
-            if (command?.CanExecute(eventArg) == true)
-                command.Execute(eventArg);
+            if (swipeDetailCommand?.CanExecute(eventArg) == true)
+                swipeDetailCommand.Execute(eventArg);
         })
         {
             Enabled = false,

@@ -1,4 +1,4 @@
-﻿using MauiGestures;
+﻿using Yang.Maui.Gestures;
 using System;
 using System.Windows.Input;
 
@@ -22,7 +22,6 @@ namespace DemoApp
             this.navigation = navigation;
         }
 
-        
         public ICommand PanPointCommand => new Command<PanEventArgs>(args =>
         {
             var point = args.Point;
@@ -46,11 +45,17 @@ namespace DemoApp
                     Children = { new WebView { Source = new UrlWebViewSource { Url = "https://vapolia.fr" }, HorizontalOptions = LayoutOptions.Fill, VerticalOptions = LayoutOptions.Fill} }}});
         });
 
-        
         public ICommand OpenVapoliaPointCommand => new Command<Point>(point =>
         {
             Pan = point;
             OpenVapoliaCommand.Execute(null);
+        });
+
+        SwipeEventArgs swipeDetail;
+        public SwipeEventArgs SwipeDetail { get => swipeDetail; set { swipeDetail = value; OnPropertyChanged(); } }
+        public ICommand SwipeDetailCommand => new Command<SwipeEventArgs>(args =>
+        {
+            SwipeDetail = args;
         });
     }
 }

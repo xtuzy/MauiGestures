@@ -111,8 +111,8 @@ internal partial class PlatformGestureEffect : PlatformEffect
             {
                 if (swipeDetailCommand != null)
                 {
-                    if (swipeDetailCommand.CanExecute(commandParameter))
-                        swipeDetailCommand.Execute(commandParameter);
+                    if (swipeDetailCommand.CanExecute(arg))
+                        swipeDetailCommand.Execute(arg);
                 }
             },
             PanAction = (initialDown, currentMove) =>
